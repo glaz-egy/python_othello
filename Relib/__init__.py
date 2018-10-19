@@ -8,7 +8,6 @@ ERROR = 11
 DEBAG = 100
 LEARN = 101
 
-from . import ProconNetwork
-from . import Bot
+from . import Network
 from . import SystemControl
 from . import Evolutionary
