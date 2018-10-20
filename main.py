@@ -22,8 +22,10 @@ class ReversiBot:
         self.Network = Relib.Network.Network()
         self.Network.load_params('gene/params100.pkl')
 
-    def NextSet(self, blank, nowColor):
+    def NextSet(self, blank):
         global passFlag
+        global nowColor
+        global Flag
         posList = []
         eva = []
         for x in blank:
@@ -35,6 +37,8 @@ class ReversiBot:
         if len(eva) == 0 and passFlag:
             Endfunc()
         if len(eva) == 0:
+            print('kkkk')
+            Flag = not Flag
             nowColor = 'black'
             return
         passFlag = False
@@ -160,9 +164,10 @@ def update(event):
     if event.GetId() == 195:
         sleeps += 1
         if sleeps == 10:
+            print('yyyyyy')
             TurnTimer.Stop()
             sleeps = 0
-            bot.NextSet(field.Blank, nowColor)
+            bot.NextSet(field.Blank)
     if event.GetId() == 196:
         Flag = False
         if field.Blanktimer[-1] == player[0].GetPosition[-1]:
@@ -216,6 +221,7 @@ def ButtonPush(event):
     global nowColor
     global Flag
     global passFlag
+    print(nowColor)
     ID = event.GetId()
     if ID < 100:
         if IsGetCheck(nowColor, ID):
@@ -224,7 +230,7 @@ def ButtonPush(event):
         passFlag = True
         Flag = not Flag
         nowColor = WhiteToBlack[nowColor][1]
-        bot.NextSet(field.Blank, nowColor)
+        bot.NextSet(field.Blank)
         if len(field.Blank) == 0: Endfunc()
     if ID == 199:
         timer.Stop()
@@ -265,7 +271,5 @@ if __name__=='__main__':
     panel.SetSizer(sizer)
     frame.Bind(wx.EVT_BUTTON ,ButtonPush)
     frame.Bind(wx.EVT_TIMER, update)
-    if Flag:
-        bot.NextSet(field.Blank, nowColor)
     frame.Show()
     app.MainLoop()

@@ -130,7 +130,7 @@ def IsGetCheck(color, pos, player, field, bot=False):
     if bot: return (CanputFlag, pl)
 
 def Endfunc(player):
-    score = len(player[0].GetPosition) - len(player[1].GetPosition)
+    score = -(len(player[0].GetPosition) - len(player[1].GetPosition))
     print('       {}:{}, {}:{} {}'.format(player[0].Color, len(player[0].GetPosition), player[1].Color, len(player[1].GetPosition), score))
     return (False, score)
 
