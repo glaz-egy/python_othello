@@ -45,8 +45,8 @@ class GeneManagement:
             self.GeneSeedSelect('gene/params0.pkl', 'gene/params1.pkl')
         else:
             for i in range(self.GeneNum):
-                Network = Network.Network()
-                Network.save_params(file_name='gene/params{}.pkl'.format(i))
+                network = Network.Network()
+                network.save_params(file_name='gene/params{}.pkl'.format(i))
 
     def SelectGene(self, paramsdata):
         if self.SelectMethod == 0:
