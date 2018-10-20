@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from . import ProconNetwork
+from . import Network
 from operator import attrgetter
 import pickle
 import random
@@ -45,7 +45,7 @@ class GeneManagement:
             self.GeneSeedSelect('gene/params0.pkl', 'gene/params1.pkl')
         else:
             for i in range(self.GeneNum):
-                Network = ProconNetwork.Network()
+                Network = Network.Network()
                 Network.save_params(file_name='gene/params{}.pkl'.format(i))
 
     def SelectGene(self, paramsdata):
