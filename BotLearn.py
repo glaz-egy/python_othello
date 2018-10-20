@@ -131,7 +131,7 @@ def IsGetCheck(color, pos, player, field, bot=False):
 
 def Endfunc(player):
     score = len(player[0].GetPosition) - len(player[1].GetPosition)
-    print('       {}'.format(score))
+    print('       {}:{}, {}:{} {}'.format(player[0].Color, len(player[0].GetPosition), player[1].Color, len(player[1].GetPosition), score))
     return (False, score)
 
 def ChangeColor(color, pos, player, field):
@@ -164,7 +164,7 @@ def Learn(params):
 
 if __name__=='__main__':
     playerSeed = [Player('white'), Player('black')]
-    genes = 50
+    genes = 500
     paramsnum = 100
     Evo = Relib.Evolutionary.GeneManagement()
     if not os.path.isfile('gene/params0.pkl'):

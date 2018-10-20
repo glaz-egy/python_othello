@@ -20,6 +20,7 @@ class ReversiBot:
         self.Black = [[0 for _ in range(8)] for _ in range(8)]
         self.White = [[0 for _ in range(8)] for _ in range(8)]
         self.Network = Relib.Network.Network()
+        self.Network.load_params('gene/params100.pkl')
 
     def NextSet(self, blank, nowColor):
         global passFlag
