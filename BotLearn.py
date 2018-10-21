@@ -16,8 +16,8 @@ class ReversiBot:
     def __init__(self, color, params):
         self.Color = color
         self.Blank = [[0 for _ in range(8)] for _ in range(8)]
-        self.Black = [[0 for _ in range(8)] for _ in range(8)]
-        self.White = [[0 for _ in range(8)] for _ in range(8)]
+        self.Enemy = [[0 for _ in range(8)] for _ in range(8)]
+        self.My = [[0 for _ in range(8)] for _ in range(8)]
         self.Network = Relib.Network.Network()
         self.Network.load_params(file_name=params)
 
@@ -37,19 +37,19 @@ class ReversiBot:
         ChangeColor(self.Color, Next, player, field)
 
     def EvaluationCalc(self, players, blank, x):
-        White = deepcopy(self.White)
-        Black = deepcopy(self.Black)
+        Enemy = deepcopy(self.Enemy)
+        My = deepcopy(self.My)
         Blank = deepcopy(self.Blank)
         CopyPlayer = deepcopy(players)
         CopyBlank = deepcopy(blank)
         self.ChangeColor(CopyPlayer, CopyBlank, x)
-        for x in CopyPlayer[0].GetPosition:
-            White[x//10-1][x%10-1] = 1
-        for x in CopyPlayer[1].GetPosition:
-            Black[x//10-1][x%10-1] = 1
+        for x in CopyPlayer[WhiteToBlack[self.Color][2]].GetPosition:
+            My[x//10-1][x%10-1] = 1
+        for x in CopyPlayer[WhiteToBlack[self.Color][0]].GetPosition:
+            Enemy[x//10-1][x%10-1] = 1
         for x in CopyBlank:
             Blank[x//10-1][x%10-1] = 1
-        FieldData = np.array([White, Black, Blank])
+        FieldData = np.array([My, Enemy, Blank])
         return self.Network.predict(FieldData.reshape(-1, 3, 8, 8))
 
     def ChangeColor(self, players, blank, pos):
@@ -130,7 +130,7 @@ def IsGetCheck(color, pos, player, field, bot=False):
     if bot: return (CanputFlag, pl)
 
 def Endfunc(player):
-    score = -(len(player[0].GetPosition) - len(player[1].GetPosition))
+    score = (len(player[0].GetPosition) - len(player[1].GetPosition))
     print('       {}:{}, {}:{} {}'.format(player[0].Color, len(player[0].GetPosition), player[1].Color, len(player[1].GetPosition), score))
     return (False, score)
 
@@ -164,7 +164,7 @@ def Learn(params):
 
 if __name__=='__main__':
     playerSeed = [Player('white'), Player('black')]
-    genes = 500
+    genes = 2000
     paramsnum = 100
     Evo = Relib.Evolutionary.GeneManagement()
     if not os.path.isfile('gene/params0.pkl'):

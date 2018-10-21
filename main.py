@@ -4,9 +4,12 @@ from copy import deepcopy
 import numpy as np
 import Relib
 from time import sleep
+import wx.media
 import sys
 import wx
 import os
+
+NumberRank = ['01st', '02nd', '03rd', '04th', '05th', '06th', '07th', '08th', '09th', '10th']
 
 WhiteToBlack = {'white': (1, 'black', 0),
                 'black': (0, 'white', 1)}
@@ -37,7 +40,6 @@ class ReversiBot:
         if len(eva) == 0 and passFlag:
             Endfunc()
         if len(eva) == 0:
-            print('kkkk')
             Flag = not Flag
             nowColor = 'black'
             return
@@ -157,6 +159,30 @@ def IsGetCheck(color, pos, bot=False):
     if not bot: return CanputFlag
     if bot: return (CanputFlag, pl)
 
+def Swap(lists, fromData, toData):
+    lists[fromData], lists[toData] = lists[toData], lists[fromData]
+    return lists
+
+def IsUpdateRanking():
+    global RankList
+    x = 9
+    Score = len(player[1].GetPosition) - len(player[0].GetPosition)
+    if Score > (int(RankList[9][0]) if RankList[9][0] != 'N/A' else 0):
+        NameDialog = wx.TextEntryDialog(None, '君、リバーシ強いね。ってか名前教えて。', '君の名前を教えて欲しいな')
+        NameDialog.SetValue('ここに名前を入力してね')
+        NameDialog.ShowModal()
+        Name = NameDialog.GetValue()
+        NameDialog.Destroy()
+        print(Name)
+        while (Score > (int(RankList[x-1][0]) if RankList[x-1][0] != 'N/A' else 0)) and x != 0:
+            x -= 1
+        RankList.insert(x, [Score, Name])
+        RankList = RankList[:10]
+        with open('Ranking.txt', 'w') as f:
+            for rank in RankList:
+                f.write('{}-{}\n'.format(rank[0], rank[1]))
+        LoadRanking()
+
 def update(event):
     global nowColor
     global Flag
@@ -164,12 +190,15 @@ def update(event):
     if event.GetId() == 195:
         sleeps += 1
         if sleeps == 10:
-            print('yyyyyy')
             TurnTimer.Stop()
             sleeps = 0
             bot.NextSet(field.Blank)
     if event.GetId() == 196:
         Flag = False
+        if len(player[0].GetPosition) == 0 or len(player[1].GetPosition) == 0:
+            timer.Stop()
+            IsUpdateRanking()
+            return
         if field.Blanktimer[-1] == player[0].GetPosition[-1]:
             field.Button[ConversionField(player[0].GetPosition[-1])].SetBackgroundColour('black')
             field.Button[ConversionField(player[1].GetPosition[-1])].SetBackgroundColour('white')
@@ -178,7 +207,9 @@ def update(event):
             player[0].GetPosition.remove(player[0].GetPosition[-1])
             player[1].GetPosition.remove(player[1].GetPosition[-1])
         field.Blanktimer.remove(field.Blanktimer[-1])
-        if field.Blanktimer[-1] <= crossnum: timer.Stop()
+        if field.Blanktimer[-1] < crossnum:
+            timer.Stop()
+            IsUpdateRanking()
     elif event.GetId() == 197:
         EnemyIs = WhiteToBlack[nowColor][0]
         MyIs = WhiteToBlack[nowColor][2]
@@ -238,14 +269,37 @@ def ButtonPush(event):
         TurnTimer.Stop()
         field.GameInit(player)
 
+def SetRanking(sizer):
+    rank = []
+    font = wx.Font(30, wx.FONTFAMILY_DEFAULT, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL)
+    size = wx.BoxSizer(wx.VERTICAL)
+    for x in range(10):
+        rank.append(wx.StaticText(Butzone, -1, ' '))
+        rank[-1].SetFont(font)
+        sizer.Add(rank[-1], flag=wx.GROW | wx.LIGHT | wx.ALIGN_BOTTOM)
+    return rank
+
+def LoadRanking():
+    global Ranking
+    fline = []
+    with open('Ranking.txt', 'r') as f:
+        for ftemp in f:
+            Point, Name = ftemp.split('-')
+            Name = Name.replace('\n', '')
+            fline.append([Point, Name])
+    for rank in range(len(Ranking)):
+        Ranking[rank].SetLabel('{} : {}\n 得点:{}'.format(NumberRank[rank], fline[rank][1], fline[rank][0]))
+    return fline
+    
+
 if __name__=='__main__':
     app = wx.App()
     AppName = 'RSFP -Reversi of School Festival for Python-'
-    frame = wx.Frame(None, -1, AppName, pos=(0, 0), size=(1200, 1000))
+    frame = wx.Frame(None, -1, AppName, pos=(0, 0), size=(1500, 1000))
     sizer = wx.BoxSizer(wx.HORIZONTAL)
     panel = wx.Panel(frame, -1)
     board = wx.Panel(panel, -1, size=(100, 100))
-    Butzone = wx.Panel(panel, -1)
+    Butzone = wx.Panel(panel, -1, size=(600, 1000))
     player = [Player('white'), Player('black')]
     field = Field(board, player)
     bot = ReversiBot('white')
@@ -265,6 +319,8 @@ if __name__=='__main__':
     sizer2 = wx.BoxSizer(wx.VERTICAL)
     sizer2.Add(PassButton, flag=wx.GROW | wx.RIGHT)
     sizer2.Add(ResetButton, flag=wx.GROW | wx.RIGHT)
+    Ranking = SetRanking(sizer2)
+    RankList = LoadRanking()
     Butzone.SetSizer(sizer2)
     sizer.Add(board, 10, flag=wx.SHAPED)
     sizer.Add(Butzone, 1)
