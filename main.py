@@ -126,6 +126,36 @@ class Field:
         self.Blank.remove(45)
         self.Blank.remove(54)
 
+class MusicPlay:
+    def __init__(self):
+        self.frame = wx.Frame(None, -1, title='「あぁ～！フロア熱狂の音ォ ！！」', size=(1910, 1070), pos=(0, 0), style=wx.CAPTION | wx.MAXIMIZE |wx.STAY_ON_TOP)
+        self.MusicContrl = wx.media.MediaCtrl(self.frame)
+        self.MusicContrl.Load('「あぁ～！フロア熱狂の音ォ ！！」.mp4')
+        self.frame.Show()
+        self.PlayTimer = wx.Timer(self.frame, 2018)
+        self.EndTimer = wx.Timer(self.frame, 2019)
+        self.frame.Bind(wx.EVT_TIMER, self.Timer)
+
+    def Start(self):
+        self.PlayTimer.Start(1000)
+
+    def Timer(self, event):
+        if event.GetId() == 2018:
+            self.Play()
+        if event.GetId() == 2019 and self.MusicContrl.GetState() != wx.media.MEDIASTATE_PLAYING:
+            self.End()
+
+    def Play(self):
+        self.PlayTimer.Stop()
+        self.MusicContrl.Play()
+        self.EndTimer.Start(100)
+    
+    def End(self):
+        self.EndTimer.Stop()
+        self.frame.Destroy()
+        self.MusicContrl.Destroy()
+
+
 def ConversionField(num, FromField='OutRangeField'):
     if 'OutRangeField' == FromField:
         x = -(11 + 2 *(num//10 - 1))
@@ -182,6 +212,9 @@ def IsUpdateRanking():
             for rank in RankList:
                 f.write('{}-{}\n'.format(rank[0], rank[1]))
         LoadRanking()
+    if Score == 64:
+        media = MusicPlay()
+        media.Start()
 
 def update(event):
     global nowColor
@@ -254,20 +287,21 @@ def ButtonPush(event):
     global passFlag
     print(nowColor)
     ID = event.GetId()
-    if ID < 100:
-        if IsGetCheck(nowColor, ID):
-            ChangeColor(nowColor, ID)
-    if ID == 198:
-        passFlag = True
-        Flag = not Flag
-        nowColor = WhiteToBlack[nowColor][1]
-        bot.NextSet(field.Blank)
-        if len(field.Blank) == 0: Endfunc()
-    if ID == 199:
-        timer.Stop()
-        ChangeColorTimer.Stop()
-        TurnTimer.Stop()
-        field.GameInit(player)
+    if not ChangeColorTimer.IsRunning():
+        if ID < 100:
+            if IsGetCheck(nowColor, ID):
+                ChangeColor(nowColor, ID)
+        if ID == 198:
+            passFlag = True
+            Flag = not Flag
+            nowColor = WhiteToBlack[nowColor][1]
+            bot.NextSet(field.Blank)
+            if len(field.Blank) == 0: Endfunc()
+        if ID == 199:
+            timer.Stop()
+            ChangeColorTimer.Stop()
+            TurnTimer.Stop()
+            field.GameInit(player)
 
 def SetRanking(sizer):
     rank = []
@@ -288,7 +322,7 @@ def LoadRanking():
             Name = Name.replace('\n', '')
             fline.append([Point, Name])
     for rank in range(len(Ranking)):
-        Ranking[rank].SetLabel('{} : {}\n 得点:{}'.format(NumberRank[rank], fline[rank][1], fline[rank][0]))
+        Ranking[rank].SetLabel('{} : {}\n得点 : {}'.format(NumberRank[rank], fline[rank][1], fline[rank][0]))
     return fline
     
 
