@@ -24,6 +24,7 @@ class ReversiBot:
         self.White = [[0 for _ in range(8)] for _ in range(8)]
         self.Network = Relib.Network.Network()
         self.Network.load_params('gene/params100.pkl')
+        log.LogWrite('Init ReversiBot')
 
     def NextSet(self, blank):
         global passFlag
@@ -39,14 +40,19 @@ class ReversiBot:
                 print('Position: {}, Eva: {}'.format(posList[-1], eva[-1]))
         if len(eva) == 0 and passFlag:
             Endfunc()
-        if len(eva) == 0:
+        elif len(eva) == 0:
+            MsDialog = wx.MessageDialog(frame, 'AIはパスした。あなたはどうする？', 'あっれれ～？　相手が動いていないよ～？')
+            MsDialog.ShowModal()
+            MsDialog.Destroy()
             Flag = not Flag
             nowColor = 'black'
+            log.LogWrite('AI is pass')
             return
         passFlag = False
         evaArray = np.array(eva)
         Next = posList[evaArray.argmax()]
         print('Best pos: {}, Best Eva: {}'.format(Next, evaArray[evaArray.argmax()]))
+        log.LogWrite('Best pos: {}, Best Eva: {}'.format(Next, evaArray[evaArray.argmax()]))
         IsGetCheck(self.Color, Next)
         ChangeColor(self.Color, Next)
 
@@ -105,6 +111,7 @@ class Field:
     def GameInit(self, player):
         global nowColor
         global passFlag
+        log.LogWrite('Init field')
         passFlag = False
         nowColor = 'black'
         self.Blanktimer = deepcopy(self.Blanks)
@@ -200,19 +207,20 @@ def IsUpdateRanking():
     if Score > (int(RankList[9][0]) if RankList[9][0] != 'N/A' else 0):
         NameDialog = wx.TextEntryDialog(None, '君、リバーシ強いね。ってか名前教えて。', '君の名前を教えて欲しいな')
         NameDialog.SetValue('ここに名前を入力してね')
-        NameDialog.ShowModal()
-        Name = NameDialog.GetValue()
-        NameDialog.Destroy()
-        print(Name)
-        while (Score > (int(RankList[x-1][0]) if RankList[x-1][0] != 'N/A' else 0)) and x != 0:
-            x -= 1
-        RankList.insert(x, [Score, Name])
-        RankList = RankList[:10]
-        with open('Ranking.txt', 'w') as f:
-            for rank in RankList:
-                f.write('{}-{}\n'.format(rank[0], rank[1]))
-        LoadRanking()
+        if NameDialog.ShowModal() == wx.ID_OK:
+            Name = NameDialog.GetValue()
+            NameDialog.Destroy()
+            print(Name)
+            while (Score > (int(RankList[x-1][0]) if RankList[x-1][0] != 'N/A' else 0)) and x != 0:
+                x -= 1
+            RankList.insert(x, [Score, Name])
+            RankList = RankList[:10]
+            with open('Ranking.txt', 'w') as f:
+                for rank in RankList:
+                    f.write('{}-{}\n'.format(rank[0], rank[1]))
+            LoadRanking()
     if Score == 64:
+        log.LogWrite('Fill all black')
         media = MusicPlay()
         media.Start()
 
@@ -256,9 +264,9 @@ def update(event):
             ChangeColorTimer.Stop()
             player[MyIs].TempGet = []
             nowColor = WhiteToBlack[nowColor][1]
-            if len(field.Blank) == 0: Endfunc()
             Flag = not Flag
-            if Flag:
+            if len(field.Blank) == 0: Endfunc()
+            elif Flag:
                 TurnTimer.Start(50)
             
 
@@ -290,6 +298,7 @@ def ButtonPush(event):
     if not ChangeColorTimer.IsRunning():
         if ID < 100:
             if IsGetCheck(nowColor, ID):
+                log.LogWrite('Player next {}'.format(ID))
                 ChangeColor(nowColor, ID)
         if ID == 198:
             passFlag = True
@@ -323,11 +332,13 @@ def LoadRanking():
             fline.append([Point, Name])
     for rank in range(len(Ranking)):
         Ranking[rank].SetLabel('{} : {}\n得点 : {}'.format(NumberRank[rank], fline[rank][1], fline[rank][0]))
+    log.LogWrite('Update Ranking')
     return fline
     
 
 if __name__=='__main__':
     app = wx.App()
+    log = Relib.SystemControl.LogControl('game.log')
     AppName = 'RSFP -Reversi of School Festival for Python-'
     frame = wx.Frame(None, -1, AppName, pos=(0, 0), size=(1500, 1000))
     sizer = wx.BoxSizer(wx.HORIZONTAL)

@@ -78,7 +78,7 @@ class GeneManagement:
             self.SaveParams(child, FileName='params{}.pkl'.format(i))
             i += 1
         
-    def SelectTournament(self, params, toursize=10):
+    def SelectTournament(self, params, toursize=3):
         choice = []
         for _ in range(self.GeneNum):
             select = [random.choice(params) for j in range(toursize)]
