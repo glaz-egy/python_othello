@@ -203,7 +203,7 @@ def Swap(lists, fromData, toData):
 def IsUpdateRanking():
     global RankList
     x = 9
-    Score = len(player[1].GetPosition) - len(player[0].GetPosition)
+    Score = (len(player[1].GetPosition) - len(player[0].GetPosition)) if len(player[0].GetPosition) != 0 else 64
     if Score > (int(RankList[9][0]) if RankList[9][0] != 'N/A' else 0):
         NameDialog = wx.TextEntryDialog(None, '君、リバーシ強いね。ってか名前教えて。', '君の名前を教えて欲しいな')
         NameDialog.SetValue('ここに名前を入力してね')
@@ -274,9 +274,9 @@ def Endfunc():
     global crossnum
     player[0].GetPosition.sort()
     player[1].GetPosition.sort(reverse=True)
-    crossnum1 = len(player[0].GetPosition)
+    crossnum1 = len(player[1].GetPosition)
     crossnum = ConversionField(crossnum1, FromField='InRangeField')
-    timer.Start(30)
+    #timer.Start(30)
 
 def ChangeColor(color, pos):
     global nowColor
